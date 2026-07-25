@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AAA DIGITAL STUDIO - ક્લાઉડ બિલિંગ અને ક્વોટેશન</title>
+    <title>AAA DIGITAL STUDIO - ક્લાઉડ બિલિંગ સોફ્ટવેર</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
@@ -47,19 +47,19 @@
                 ખોટો યુઝરનેમ અથવા પાસવર્ડ!
             </div>
 
-            <div class="space-y-4 text-left">
+            <form id="loginForm" onsubmit="event.preventDefault(); checkLogin();" class="space-y-4 text-left">
                 <div>
                     <label class="block text-gray-700 font-bold mb-1">યુઝરનેમ (Username):</label>
-                    <input type="text" id="username" placeholder="યુઝરનેમ લખો" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                    <input type="text" id="username" placeholder="યુઝરનેમ લખો" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none" required>
                 </div>
                 <div>
                     <label class="block text-gray-700 font-bold mb-1">પાસવર્ડ (Password):</label>
-                    <input type="password" id="password" placeholder="પાસવર્ડ લખો" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                    <input type="password" id="password" placeholder="પાસવર્ડ લખો" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none" required>
                 </div>
-                <button onclick="checkLogin()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg shadow-lg text-lg transition">
+                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg shadow-lg text-lg transition">
                     🔓 લોગિન કરો
                 </button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -296,7 +296,7 @@
 
     <!-- JavaScript & Cloud Database Integration -->
     <script>
-        // FIREBASE CONFIGURATION (AUTOMATICALLY CONFIGURED)
+        // FIREBASE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyB3Awr3mXopyjJe81lpcvG2iMKbZIPweI4",
             authDomain: "aaa-studio-f785d.firebaseapp.com",
@@ -308,15 +308,285 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch(e) { console.log(e); }
+
         const database = firebase.database();
 
-        document.getElementById('invDate').valueAsDate = new Date();
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById('invDate').valueAsDate = new Date();
+            if(sessionStorage.getItem("isLoggedIn") === "true") {
+                showDashboard();
+            }
+        });
 
-        if(sessionStorage.getItem("isLoggedIn") === "true") {
+        function checkLogin() {
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+
+            if(u.toUpperCase() === "AAA" && p === "1234") {
+                sessionStorage.setItem("isLoggedIn", "true");
+                showDashboard();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function showDashboard() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainDashboard').classList.remove('hidden');
         }
 
-        function checkLogin() {
-            const u = document.getElementById('user
+        function logout() {
+            sessionStorage.removeItem("isLoggedIn");
+            location.reload();
+        }
+
+        function toggleDocType() {
+            const val = document.getElementById('docType').value;
+            document.getElementById('docTypeTitle').innerText = val;
+        }
+
+        function selectPredefinedService(selectObj) {
+            const row = selectObj.parentElement;
+            const inputField = row.querySelector('.item-desc');
+            if(selectObj.value !== "") {
+                inputField.value = selectObj.value;
+            }
+        }
+
+        function addRow() {
+            const table = document.getElementById('itemsTable');
+            const rowCount = table.rows.length + 1;
+            const newRow = document.createElement('tr');
+            
+            newRow.innerHTML = `
+                <td class="p-2 border text-center font-bold">${rowCount}</td>
+                <td class="p-2 border">
+                    <select class="w-full p-1.5 border rounded mb-1 text-sm font-semibold" onchange="selectPredefinedService(this)">
+                        <option value="">-- સેવા સિલેક્ટ કરો --</option>
+                        <option value="ટ્રેડિશનલ વિડીયો શૂટિંગ (Traditional Video)">ટ્રેડિશનલ વિડીયો શૂટિંગ (Traditional Video)</option>
+                        <option value="DSLR / સિનેમેટિક વિડીયો શૂટિંગ (DSLR Cinematic Video)">DSLR / સિનેમેટિક વિડીયો શૂટિંગ (DSLR Cinematic Video)</option>
+                        <option value="કેન્ડિડ ફોટોગ્રાફી (Candid Photography)">કેન્ડિડ ફોટોગ્રાફી (Candid Photography)</option>
+                        <option value="ટ્રેડિશનલ ફોટોગ્રાફી (Traditional Photography)">ટ્રેડિશનલ ફોટોગ્રાફી (Traditional Photography)</option>
+                        <option value="પ્રી-વેડિંગ શૂટ (Pre-Wedding Shoot)">પ્રી-વેડિંગ શૂટ (Pre-Wedding Shoot)</option>
+                        <option value="ડ્રોન શૂટિંગ (Drone Shooting)">ડ્રોન શૂટિંગ (Drone Shooting)</option>
+                        <option value="વિડીયો એડિટિંગ (Video Editing)">વિડીયો એડિટિંગ (Video Editing)</option>
+                        <option value="આલ્બમ ડિઝાઇનિંગ અને પ્રિન્ટિંગ">આલ્બમ ડિઝાઇનિંગ અને પ્રિન્ટિંગ</option>
+                        <option value="ફોટો ફ્રેમ (Photo Frame - All Sizes)">ફોટો ફ્રેમ (Photo Frame - All Sizes)</option>
+                    </select>
+                    <input type="text" placeholder="સેવાનું નામ લખો..." class="item-desc w-full p-1.5 border rounded mb-1 text-sm">
+                    <input type="text" placeholder="✍️ રિમાર્ક / વિશેષ નોંધ (દા.ત. ૧૨x૩૬ ફ્રેમ, પેનડ્રાઈવ વગેરે)" class="item-remark w-full p-1 border rounded text-xs bg-amber-50 text-amber-900 border-amber-200">
+                </td>
+                <td class="p-2 border">
+                    <select class="item-hours-qty w-full p-1.5 border rounded text-center text-sm font-semibold" onchange="calculateTotal()">
+                        <option value="1">૧ કલાક / ૧ વિગત</option>
+                        <option value="2">૨ કલાક / ૨ વિગત</option>
+                        <option value="3">૩ કલાક / ૩ વિગત</option>
+                        <option value="4">૪ કલાક / ૪ વિગત</option>
+                        <option value="5">૫ કલાક / ૫ વિગત</option>
+                        <option value="6">૬ કલાક / ૬ વિગત</option>
+                        <option value="7">૭ કલાક / ૭ વિગત</option>
+                        <option value="8">૮ કલાક / ૮ વિગત</option>
+                        <option value="9">૯ કલાક / ૯ વિગત</option>
+                        <option value="10">૧૦ કલાક / ૧૦ વિગત</option>
+                    </select>
+                </td>
+                <td class="p-2 border"><input type="number" value="0" class="item-rate w-full p-1.5 border text-right text-sm" oninput="calculateTotal()"></td>
+                <td class="p-2 border text-right font-bold text-gray-800 item-amount">₹ ૦.૦૦</td>
+                <td class="p-2 border text-center no-print">
+                    <button onclick="removeRow(this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">❌</button>
+                </td>
+            `;
+            table.appendChild(newRow);
+            calculateTotal();
+        }
+
+        function removeRow(btn) {
+            const row = btn.parentElement.parentElement;
+            row.remove();
+            reindexRows();
+            calculateTotal();
+        }
+
+        function reindexRows() {
+            const rows = document.querySelectorAll('#itemsTable tr');
+            rows.forEach((row, index) => {
+                row.cells[0].innerText = index + 1;
+            });
+        }
+
+        function calculateTotal() {
+            const rows = document.querySelectorAll('#itemsTable tr');
+            let subTotal = 0;
+
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-hours-qty').value) || 1;
+                const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+                const amount = qty * rate;
+                row.querySelector('.item-amount').innerText = '₹ ' + amount.toFixed(2);
+                subTotal += amount;
+            });
+
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const advance = parseFloat(document.getElementById('advance').value) || 0;
+            const grandTotal = subTotal - discount - advance;
+
+            document.getElementById('subTotal').innerText = '₹ ' + subTotal.toFixed(2);
+            document.getElementById('grandTotal').innerText = '₹ ' + grandTotal.toFixed(2);
+        }
+
+        function saveInvoice() {
+            const name = document.getElementById('custName').value.trim();
+            const mobile = document.getElementById('custMobile').value.trim();
+
+            if(!name || !mobile) {
+                alert("મહેરબાની કરીને ગ્રાહકનું નામ અને મોબાઇલ નંબર લખો!");
+                return;
+            }
+
+            const invoiceId = Date.now().toString();
+            const invoiceData = {
+                id: invoiceId,
+                docType: document.getElementById('docType').value,
+                invNo: document.getElementById('invNo').value,
+                invDate: document.getElementById('invDate').value,
+                custName: name,
+                custMobile: mobile,
+                custAddress: document.getElementById('custAddress').value,
+                discount: document.getElementById('discount').value,
+                advance: document.getElementById('advance').value,
+                items: []
+            };
+
+            const rows = document.querySelectorAll('#itemsTable tr');
+            rows.forEach(row => {
+                invoiceData.items.push({
+                    desc: row.querySelector('.item-desc').value,
+                    remark: row.querySelector('.item-remark').value,
+                    qty: row.querySelector('.item-hours-qty').value,
+                    rate: row.querySelector('.item-rate').value
+                });
+            });
+
+            database.ref('invoices/' + invoiceId).set(invoiceData, (error) => {
+                if (error) {
+                    alert("❌ ડેટા સેવ કરવામાં તકલીફ થઈ: " + error.message);
+                } else {
+                    alert("✅ બિલ ક્લાઉડમાં સફળતાપૂર્વક સેવ થઈ ગયું છે!");
+                }
+            });
+        }
+
+        function searchCustomer() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            if(!query) {
+                alert("શોધવા માટે નામ અથવા નંબર લખો.");
+                return;
+            }
+
+            database.ref('invoices').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+
+                if(!data) {
+                    historyList.innerHTML = `<p class="text-red-500 font-semibold text-sm">કોઈ રેકોર્ડ મળ્યો નથી.</p>`;
+                    document.getElementById('searchResults').classList.remove('hidden');
+                    return;
+                }
+
+                let found = false;
+                Object.values(data).forEach(inv => {
+                    if(inv.custName.toLowerCase().includes(query) || inv.custMobile.includes(query)) {
+                        found = true;
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = "flex justify-between items-center p-2 bg-amber-50 rounded border border-amber-200 text-sm";
+                        itemDiv.innerHTML = `
+                            <div>
+                                <span class="font-bold text-amber-900">${inv.custName}</span> (${inv.custMobile})
+                                <br><span class="text-xs text-gray-500">બિલ નં: ${inv.invNo} | તારીખ: ${inv.invDate}</span>
+                            </div>
+                            <button onclick="loadInvoice('${inv.id}')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-amber-700">📂 ઓપન કરો</button>
+                        `;
+                        historyList.appendChild(itemDiv);
+                    }
+                });
+
+                if(!found) {
+                    historyList.innerHTML = `<p class="text-red-500 font-semibold text-sm">કોઈ રેકોર્ડ મળ્યો નથી.</p>`;
+                }
+
+                document.getElementById('searchResults').classList.remove('hidden');
+            });
+        }
+
+        function closeSearch() {
+            document.getElementById('searchResults').classList.add('hidden');
+        }
+
+        function loadInvoice(id) {
+            database.ref('invoices/' + id).once('value', (snapshot) => {
+                const inv = snapshot.val();
+                if(!inv) return;
+
+                document.getElementById('docType').value = inv.docType;
+                toggleDocType();
+                document.getElementById('invNo').value = inv.invNo;
+                document.getElementById('invDate').value = inv.invDate;
+                document.getElementById('custName').value = inv.custName;
+                document.getElementById('custMobile').value = inv.custMobile;
+                document.getElementById('custAddress').value = inv.custAddress;
+                document.getElementById('discount').value = inv.discount;
+                document.getElementById('advance').value = inv.advance;
+
+                const table = document.getElementById('itemsTable');
+                table.innerHTML = '';
+
+                if(inv.items) {
+                    inv.items.forEach((item, index) => {
+                        const newRow = document.createElement('tr');
+                        newRow.innerHTML = `
+                            <td class="p-2 border text-center font-bold">${index + 1}</td>
+                            <td class="p-2 border">
+                                <input type="text" value="${item.desc}" class="item-desc w-full p-1.5 border rounded mb-1 text-sm">
+                                <input type="text" value="${item.remark || ''}" placeholder="✍️ રિમાર્ક / નોંધ" class="item-remark w-full p-1 border rounded text-xs bg-amber-50 text-amber-900 border-amber-200">
+                            </td>
+                            <td class="p-2 border">
+                                <select class="item-hours-qty w-full p-1.5 border rounded text-center text-sm font-semibold" onchange="calculateTotal()">
+                                    ${[1,2,3,4,5,6,7,8,9,10].map(h => `<option value="${h}" ${h == item.qty ? 'selected' : ''}>${h} કલાક / ${h} વિગત</option>`).join('')}
+                                </select>
+                            </td>
+                            <td class="p-2 border"><input type="number" value="${item.rate}" class="item-rate w-full p-1.5 border text-right text-sm" oninput="calculateTotal()"></td>
+                            <td class="p-2 border text-right font-bold text-gray-800 item-amount">₹ ૦.૦૦</td>
+                            <td class="p-2 border text-center no-print">
+                                <button onclick="removeRow(this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">❌</button>
+                            </td>
+                        `;
+                        table.appendChild(newRow);
+                    });
+                }
+
+                calculateTotal();
+                closeSearch();
+            });
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('invoice-card');
+            const custName = document.getElementById('custName').value || 'Bill';
+            
+            const opt = {
+                margin:       [0.2, 0.2, 0.2, 0.2],
+                filename:     `AAA_Studio_${custName}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
